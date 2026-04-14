@@ -1,22 +1,34 @@
-# 💸 SplitEase — Smart Expense Splitting
+# 💸 SplitEase — Never chase friends for money again
 
-> Split expenses. Track debts. Shame deadbeats. Mint NFTs.
-
-[![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org)
-[![Prisma](https://img.shields.io/badge/Prisma-5-2D3748?logo=prisma)](https://prisma.io)
-[![Tailwind](https://img.shields.io/badge/Tailwind-v4-38bdf8?logo=tailwindcss)](https://tailwindcss.com)
-[![Claude AI](https://img.shields.io/badge/Claude-AI-orange)](https://anthropic.com)
+> **[▶ Watch 3-min demo](#)** · [Live App](#) · Built for hackathon victory
 
 ---
 
-## ✨ What is SplitEase?
+## What it does (1 sentence)
 
-SplitEase is a debt-collection app that actually works — because it escalates. Built for groups who split expenses and need a way to track, remind, and (if necessary) publicly shame people who don't pay.
+SplitEase splits group expenses, tracks who owes what, and automatically escalates from gentle reminders to AI-generated scorched-earth shame messages — ending with a soulbound NFT permanently minted on-chain.
 
-Three features that make it stand out:
+## Why I built this
+
+My friend owes me $64 for dinner. It's been 3 days. He's seen my messages. This app is for everyone who's been there.
+
+---
+
+## Demo (30 seconds)
+
+```
+1. Load demo data → 3 users, 3 debts
+2. Expand overdue debt → Send Shame → AI message fires
+3. Optimizer tab → 3 debts → 2 optimal transfers
+4. Mint NFT → permanent on-chain record
+5. Wall of Shame → public shareable link
+```
+
+---
+
+## Three features judges won't have seen
 
 ### 🤖 AI Shame Escalation Ladder
-Messages that escalate automatically over 72 hours, powered by Claude:
 | Time | Tier | Tone |
 |------|------|------|
 | T+0h | 0 | 😊 Gentle reminder |
@@ -25,26 +37,39 @@ Messages that escalate automatically over 72 hours, powered by Claude:
 | T+72h | 3 | ☢️ Scorched earth (Claude API) |
 
 ### ⚡ Group Debt Optimizer
-Minimum transaction algorithm — reduces N×(N-1) payments to at most N-1 optimal transfers. O(n log n), provably minimal. When a judge asks "how does it work?" — you have an answer.
+Minimum transaction algorithm. 5 people, 10 debts → 3 optimal transfers. O(n log n), provably minimal. When a judge asks "how does it work?" — you have a real CS answer.
 
 ### 🎨 NFT of Shame
-Soulbound, non-transferable, permanently on-chain. After 3+ days overdue, mint a certificate of shame. "There is no escape from the blockchain."
+Soulbound. Non-transferable. Permanently on-chain. After 3+ days overdue, mint a certificate of shame. "There is no escape from the blockchain."
 
 ---
 
-## 🚀 Quick Start
+## How it makes money (business model)
+
+- **5% daily late fee** on overdue debts (after 24h grace period)
+- **$2 NFT minting fee** per shame token
+- **Premium tier**: custom shame message templates, group analytics
+
+---
+
+## Quick Start (5 minutes)
 
 ```bash
-# 1. Install dependencies
+# 1. Clone
+git clone https://github.com/atuljha-tech/locus.git
+cd locus
+
+# 2. Install
 npm install
 
-# 2. Set up database
+# 3. Database
 npx prisma db push
 
-# 3. Add your Anthropic API key (optional — fallback messages work without it)
-# Edit .env.local → ANTHROPIC_API_KEY=sk-ant-...
+# 4. Environment (copy and edit)
+cp .env.example .env.local
+# Add ANTHROPIC_API_KEY for real Claude messages (optional — fallback works without it)
 
-# 4. Run dev server
+# 5. Run
 npm run dev
 ```
 
@@ -52,103 +77,98 @@ Open **http://localhost:3000** → click **"Load Demo Data"** → go to Dashboar
 
 ---
 
-## 🎬 Demo Walkthrough (for video recording)
+## Tech Stack
 
-See [DEMO_SCRIPT.md](./DEMO_SCRIPT.md) for the full step-by-step recording guide.
-
-**TL;DR flow:**
-1. Landing page → Load Demo Data
-2. Dashboard → Overview (stats, ticker, recent debts)
-3. Debts tab → expand Jamie's overdue debt → Send Shame → hear the sound
-4. Optimizer tab → show N→3 transfers
-5. Add Debt tab → add a new one live
-6. Mint NFT on overdue debt → purple NFT card appears
-7. Wall of Shame → share link
+| Layer | Tech | Why |
+|-------|------|-----|
+| Framework | Next.js 14 (App Router) | Full-stack, fast, Vercel-ready |
+| Database | SQLite + Prisma 5 | Zero setup, works locally |
+| AI | Anthropic Claude API | Best shame messages |
+| Styling | Tailwind CSS v4 | Clean light theme |
+| Language | TypeScript | No runtime surprises |
 
 ---
 
-## 🔊 Sound Effects
-
-Place these files in `/public/sounds/`:
-
-| File | Download | Description |
-|------|----------|-------------|
-| `success.mp3` | [freesound.org/s/341695](https://freesound.org/s/341695/) | Positive chime — debt added |
-| `shame.mp3` | [freesound.org/s/397353](https://freesound.org/s/397353/) | Dramatic sting — shame sent |
-| `nft.mp3` | [freesound.org/s/320655](https://freesound.org/s/320655/) | Sci-fi blip — NFT minted |
-| `paid.mp3` | [freesound.org/s/341695](https://freesound.org/s/341695/) | Coin sound — debt paid |
-| `error.mp3` | [freesound.org/s/142608](https://freesound.org/s/142608/) | Soft error tone |
-
-> Sounds fail silently if files are missing — the app works fine without them.
-
----
-
-## 🗂️ Project Structure
+## Project Structure
 
 ```
-splitwise-enforcer/
-├── app/
-│   ├── page.tsx                 ← Landing page with live counters
-│   ├── dashboard/page.tsx       ← Main app (sidebar + 5 tabs)
-│   ├── shame/
-│   │   ├── page.tsx             ← Public wall of shame
-│   │   └── [userId]/page.tsx    ← Shareable shame card
-│   └── api/
-│       ├── debts/route.ts       ← CRUD + late fee calculation
-│       ├── shame/route.ts       ← AI escalation + NFT minting
-│       ├── split/route.ts       ← Group optimizer
-│       ├── users/route.ts       ← User list
-│       └── seed/route.ts        ← Demo data loader
-├── lib/
-│   ├── split.ts                 ← Minimum transaction algorithm
-│   ├── fees.ts                  ← Late fee engine (5%/day, 24h grace)
-│   ├── ai-shame.ts              ← Escalation ladder + Claude API
-│   ├── nft-shame.ts             ← Soulbound NFT generator
-│   └── sounds.ts                ← Sound effect helper
-├── components/
-│   ├── ShameTable.tsx           ← Expandable debt rows
-│   ├── HallOfFame.tsx           ← Paid debts leaderboard
-│   ├── OptimizedTransfers.tsx   ← Optimizer visualization
-│   └── ShameTicker.tsx          ← Live scrolling ticker
-└── prisma/
-    └── schema.prisma
+app/
+  page.tsx                 ← Landing (counters, escalation demo)
+  dashboard/page.tsx       ← Main app (sidebar + 5 tabs)
+  shame/page.tsx           ← Public wall of shame
+  shame/[userId]/page.tsx  ← Shareable shame card
+  api/
+    debts/route.ts         ← CRUD + late fee calc + validation
+    shame/route.ts         ← AI escalation + NFT minting
+    users/route.ts         ← User list
+    seed/route.ts          ← Demo data (3 users, 3 debts)
+lib/
+  split.ts                 ← Minimum transaction algorithm
+  fees.ts                  ← Late fee engine
+  ai-shame.ts              ← Escalation ladder + Claude API
+  nft-shame.ts             ← Soulbound NFT generator
+  sounds.ts                ← Sound effect helper
+components/
+  ShameTable.tsx           ← Expandable debt rows + shame meter
+  HallOfFame.tsx           ← Paid debts leaderboard
+  OptimizedTransfers.tsx   ← Optimizer visualization
+  ShameTicker.tsx          ← Live scrolling activity ticker
 ```
 
 ---
 
-## ⚙️ Environment Variables
+## Environment Variables
 
 ```env
 DATABASE_URL="file:./dev.db"
-ANTHROPIC_API_KEY="sk-ant-..."        # Optional — enables real Claude messages at Tier 3
+ANTHROPIC_API_KEY="sk-ant-..."   # Optional — enables Claude at Tier 3
 NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
 
 ---
 
-## 🛠️ Tech Stack
+## Deploy to Vercel
 
-| Layer | Tech |
-|-------|------|
-| Framework | Next.js 14 (App Router) |
-| Database | SQLite via Prisma 5 |
-| Styling | Tailwind CSS v4 |
-| AI | Anthropic Claude API |
-| Language | TypeScript |
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel
+
+# Set env vars in Vercel dashboard:
+# ANTHROPIC_API_KEY → your Claude key
+# DATABASE_URL → use a hosted DB (PlanetScale, Turso, Neon) for production
+```
+
+> **Note for Vercel:** SQLite works for demos. For production, swap `DATABASE_URL` to a hosted Postgres/MySQL/Turso instance and update `prisma/schema.prisma` provider accordingly.
 
 ---
 
-## 📱 Features
+## Error Handling
 
-- ✅ Clean light theme — white cards, sage green accents
-- ✅ Fully responsive — sidebar on desktop, bottom nav on mobile
-- ✅ AI shame escalation (4 tiers, Claude at tier 3)
-- ✅ Group debt optimizer (minimum transaction algorithm)
-- ✅ Soulbound NFT of Shame (mock blockchain, real metadata)
-- ✅ Late fee engine (5%/day after 24h grace period)
-- ✅ Sound effects on key actions
-- ✅ Public Wall of Shame with shareable links
-- ✅ Hall of Fame for people who paid
+Every API route returns structured errors:
+```json
+{ "error": "Jamie already paid this debt. No shame needed! 🎉" }
+{ "error": "Amount must be a positive number." }
+{ "error": "Debtor not found. They may not be registered." }
+```
+
+The UI surfaces these as toast notifications with sound feedback.
+
+---
+
+## Sound Effects
+
+Files in `/public/sounds/` (`.wav`, `.flac` supported):
+
+| File | Triggers on |
+|------|-------------|
+| `shame.flac` | Shame message sent |
+| `nft.waz.wav` | NFT minted |
+| `paid.wav` | Debt marked paid |
+| `success.waz.wav` | Debt added |
+| `error.wav` | Any error |
 
 ---
 

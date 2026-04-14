@@ -1,33 +1,43 @@
 /**
  * Sound effects for SplitEase
- * Files go in /public/sounds/
+ * Files live in /public/sounds/ — supports .wav, .mp3, .flac
  *
- * Download links (all free, no attribution required):
- *   success.mp3  → https://freesound.org/s/341695/  (short positive chime)
- *   shame.mp3    → https://freesound.org/s/397353/  (dramatic sting)
- *   nft.mp3      → https://freesound.org/s/320655/  (sci-fi blip)
- *   paid.mp3     → https://freesound.org/s/341695/  (coin sound)
- *   error.mp3    → https://freesound.org/s/142608/  (soft error)
+ * Current files in /public/sounds/:
+ *   success.waz.wav  → debt added successfully
+ *   shame.flac       → shame message sent
+ *   nft.waz.wav      → NFT minted
+ *   paid.wav         → debt marked paid
+ *   error.wav        → any error
  */
 
 type SoundName = 'success' | 'shame' | 'nft' | 'paid' | 'error'
 
+// Map each logical name to the actual filename in /public/sounds/
+const SOUND_FILES: Record<SoundName, string> = {
+  success: '/sounds/success.waz.wav',
+  shame:   '/sounds/shame.flac',
+  nft:     '/sounds/nft.waz.wav',
+  paid:    '/sounds/paid.wav',
+  error:   '/sounds/error.wav',
+}
+
 const cache = new Map<string, HTMLAudioElement>()
 
-export function playSound(name: SoundName, volume = 0.5) {
+export function playSound(name: SoundName, volume = 0.55) {
   if (typeof window === 'undefined') return
   try {
-    let audio = cache.get(name)
+    const src = SOUND_FILES[name]
+    let audio = cache.get(src)
     if (!audio) {
-      audio = new Audio(`/sounds/${name}.mp3`)
-      cache.set(name, audio)
+      audio = new Audio(src)
+      cache.set(src, audio)
     }
     audio.volume = volume
     audio.currentTime = 0
     audio.play().catch(() => {
-      // Autoplay blocked — silently ignore
+      // Autoplay policy blocked — silently ignore, app still works
     })
   } catch {
-    // Sound not found — silently ignore
+    // File missing or format unsupported — silently ignore
   }
 }

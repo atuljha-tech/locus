@@ -14,7 +14,6 @@ export async function GET() {
       orderBy: { createdAt: 'desc' },
     })
 
-    // Recalculate late fees on the fly
     const enriched = debts.map(debt => {
       if (debt.dueDate && debt.status !== 'PAID') {
         const { fee, daysOverdue, totalOwed } = calculateLateFee(debt.originalAmt, debt.dueDate)
@@ -25,22 +24,65 @@ export async function GET() {
 
     return NextResponse.json(enriched)
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 })
+    console.error('[GET /api/debts]', e)
+    return NextResponse.json(
+      { error: 'Failed to load debts. Please try again.' },
+      { status: 500 }
+    )
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json()
+    const body = await req.json().catch(() => null)
+    if (!body) {
+      return NextResponse.json({ error: 'Invalid request body.' }, { status: 400 })
+    }
+
     const { debtorId, creditorId, amount, description, dueDate } = body
+
+    if (!debtorId || !creditorId || !amount) {
+      return NextResponse.json(
+        { error: 'Missing required fields: debtorId, creditorId, amount.' },
+        { status: 400 }
+      )
+    }
+
+    if (debtorId === creditorId) {
+      return NextResponse.json(
+        { error: 'Debtor and creditor must be different people.' },
+        { status: 400 }
+      )
+    }
+
+    const parsedAmount = parseFloat(amount)
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      return NextResponse.json(
+        { error: 'Amount must be a positive number.' },
+        { status: 400 }
+      )
+    }
+
+    // Verify both users exist
+    const [debtor, creditor] = await Promise.all([
+      prisma.user.findUnique({ where: { id: debtorId } }),
+      prisma.user.findUnique({ where: { id: creditorId } }),
+    ])
+
+    if (!debtor) {
+      return NextResponse.json({ error: `Debtor not found. They may not be registered.` }, { status: 404 })
+    }
+    if (!creditor) {
+      return NextResponse.json({ error: `Creditor not found. They may not be registered.` }, { status: 404 })
+    }
 
     const debt = await prisma.debt.create({
       data: {
         debtorId,
         creditorId,
-        amount:      parseFloat(amount),
-        originalAmt: parseFloat(amount),
-        description: description ?? '',
+        amount:      parsedAmount,
+        originalAmt: parsedAmount,
+        description: description?.trim() ?? '',
         dueDate:     dueDate ? new Date(dueDate) : null,
         status:      'PENDING',
       },
@@ -52,19 +94,45 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(debt, { status: 201 })
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 })
+    console.error('[POST /api/debts]', e)
+    return NextResponse.json(
+      { error: 'Failed to create debt. Please try again.' },
+      { status: 500 }
+    )
   }
 }
 
 export async function PATCH(req: NextRequest) {
   try {
-    const { id, status } = await req.json()
+    const body = await req.json().catch(() => null)
+    if (!body?.id || !body?.status) {
+      return NextResponse.json({ error: 'Missing required fields: id, status.' }, { status: 400 })
+    }
+
+    const validStatuses = ['PENDING', 'OVERDUE', 'PAID', 'SHAMED']
+    if (!validStatuses.includes(body.status)) {
+      return NextResponse.json(
+        { error: `Invalid status. Must be one of: ${validStatuses.join(', ')}` },
+        { status: 400 }
+      )
+    }
+
+    const existing = await prisma.debt.findUnique({ where: { id: body.id } })
+    if (!existing) {
+      return NextResponse.json({ error: 'Debt not found.' }, { status: 404 })
+    }
+
     const debt = await prisma.debt.update({
-      where: { id },
-      data:  { status, paidAt: status === 'PAID' ? new Date() : null },
+      where: { id: body.id },
+      data:  { status: body.status, paidAt: body.status === 'PAID' ? new Date() : null },
     })
+
     return NextResponse.json(debt)
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 })
+    console.error('[PATCH /api/debts]', e)
+    return NextResponse.json(
+      { error: 'Failed to update debt. Please try again.' },
+      { status: 500 }
+    )
   }
 }

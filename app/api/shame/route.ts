@@ -4,10 +4,14 @@ import { generateShameMessage } from '@/lib/ai-shame'
 import { generateShameNFTMetadata, mintShameNFT } from '@/lib/nft-shame'
 import { calculateLateFee } from '@/lib/fees'
 
-// POST /api/shame — trigger shame escalation for a debt
 export async function POST(req: NextRequest) {
   try {
-    const { debtId, action } = await req.json()
+    const body = await req.json().catch(() => null)
+    if (!body?.debtId) {
+      return NextResponse.json({ error: 'Missing required field: debtId.' }, { status: 400 })
+    }
+
+    const { debtId, action } = body
 
     const debt = await prisma.debt.findUnique({
       where:   { id: debtId },
@@ -18,9 +22,21 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    if (!debt) return NextResponse.json({ error: 'Debt not found' }, { status: 404 })
+    if (!debt) {
+      return NextResponse.json(
+        { error: `Debt not found. It may have already been settled.` },
+        { status: 404 }
+      )
+    }
 
-    // Determine tier based on hours overdue
+    if (debt.status === 'PAID') {
+      return NextResponse.json(
+        { error: `${debt.debtor.name} already paid this debt. No shame needed! 🎉` },
+        { status: 400 }
+      )
+    }
+
+    // Determine shame tier from hours overdue
     const hoursOverdue = debt.dueDate
       ? (Date.now() - debt.dueDate.getTime()) / (1000 * 60 * 60)
       : 0
@@ -31,9 +47,26 @@ export async function POST(req: NextRequest) {
       : hoursOverdue < 72 ? 2
       : 3
 
+    // ── Mint NFT ──────────────────────────────────────────────────────────────
     if (action === 'mint_nft') {
-      // Mint NFT of Shame
-      const { fee, daysOverdue } = calculateLateFee(debt.originalAmt, debt.dueDate ?? new Date())
+      const daysOverdue = Math.max(0, Math.floor(hoursOverdue / 24))
+
+      if (daysOverdue < 3) {
+        return NextResponse.json(
+          { error: `${debt.debtor.name} needs to be at least 3 days overdue to mint an NFT of Shame. Currently ${daysOverdue} day(s) overdue.` },
+          { status: 400 }
+        )
+      }
+
+      const existingToken = await prisma.shameToken.findUnique({ where: { debtId } })
+      if (existingToken) {
+        return NextResponse.json(
+          { error: `An NFT of Shame already exists for this debt. Token: ${existingToken.tokenId}` },
+          { status: 400 }
+        )
+      }
+
+      const { fee } = calculateLateFee(debt.originalAmt, debt.dueDate ?? new Date())
       const metadata = generateShameNFTMetadata({
         debtorName:   debt.debtor.name,
         amount:       debt.amount + fee,
@@ -48,10 +81,8 @@ export async function POST(req: NextRequest) {
         metadata,
       })
 
-      const token = await prisma.shameToken.upsert({
-        where:  { debtId: debt.id },
-        update: { tokenId, txHash, metadata: JSON.stringify(metadata) },
-        create: {
+      const token = await prisma.shameToken.create({
+        data: {
           debtId:   debt.id,
           userId:   debt.debtorId,
           tokenId,
@@ -68,11 +99,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ token, metadata, txHash, tokenId })
     }
 
-    // Generate shame message
+    // ── Send shame message ────────────────────────────────────────────────────
     const message = await generateShameMessage(
       debt.debtor.name,
       debt.amount,
-      debt.description,
+      debt.description || 'unpaid debt',
       tier
     )
 
@@ -80,13 +111,24 @@ export async function POST(req: NextRequest) {
       data: { debtId: debt.id, message, tier },
     })
 
+    // Auto-escalate status to OVERDUE if past due date
+    if (debt.dueDate && new Date() > debt.dueDate && debt.status === 'PENDING') {
+      await prisma.debt.update({
+        where: { id: debtId },
+        data:  { status: 'OVERDUE' },
+      })
+    }
+
     return NextResponse.json({ message, tier, shameMsg })
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 })
+    console.error('[POST /api/shame]', e)
+    return NextResponse.json(
+      { error: 'Failed to process shame action. Please try again.' },
+      { status: 500 }
+    )
   }
 }
 
-// GET /api/shame — get all shamed debts for wall of shame
 export async function GET() {
   try {
     const shamed = await prisma.debt.findMany({
@@ -102,6 +144,10 @@ export async function GET() {
 
     return NextResponse.json(shamed)
   } catch (e) {
-    return NextResponse.json({ error: String(e) }, { status: 500 })
+    console.error('[GET /api/shame]', e)
+    return NextResponse.json(
+      { error: 'Failed to load Wall of Shame. Please try again.' },
+      { status: 500 }
+    )
   }
 }
