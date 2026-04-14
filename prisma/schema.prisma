@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  avatar    String?
+  createdAt DateTime @default(now())
+
+  owedDebts    Debt[] @relation("Debtor")
+  owingDebts   Debt[] @relation("Creditor")
+  shameTokens  ShameToken[]
+  groups       GroupMember[]
+}
+
+model Group {
+  id        String   @id @default(cuid())
+  name      String
+  emoji     String   @default("💸")
+  createdAt DateTime @default(now())
+
+  members  GroupMember[]
+  expenses Expense[]
+}
+
+model GroupMember {
+  id      String @id @default(cuid())
+  userId  String
+  groupId String
+  user    User   @relation(fields: [userId], references: [id])
+  group   Group  @relation(fields: [groupId], references: [id])
+
+  @@unique([userId, groupId])
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  description String
+  amount      Float
+  groupId     String
+  paidById    String
+  createdAt   DateTime @default(now())
+
+  group  Group  @relation(fields: [groupId], references: [id])
+  debts  Debt[]
+}
+
+model Debt {
+  id          String    @id @default(cuid())
+  amount      Float
+  originalAmt Float
+  debtorId    String
+  creditorId  String
+  expenseId   String?
+  description String    @default("")
+  dueDate     DateTime?
+  paidAt      DateTime?
+  status      String    @default("PENDING")
+  lateFee     Float     @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  debtor   User     @relation("Debtor",   fields: [debtorId],   references: [id])
+  creditor User     @relation("Creditor", fields: [creditorId], references: [id])
+  expense  Expense? @relation(fields: [expenseId], references: [id])
+
+  shameMessages ShameMessage[]
+  shameToken    ShameToken?
+}
+
+model ShameMessage {
+  id        String   @id @default(cuid())
+  debtId    String
+  message   String
+  tier      Int      @default(0)
+  sentAt    DateTime @default(now())
+  debt      Debt     @relation(fields: [debtId], references: [id])
+}
+
+model ShameToken {
+  id          String   @id @default(cuid())
+  debtId      String   @unique
+  userId      String
+  tokenId     String   @unique
+  metadata    String
+  mintedAt    DateTime @default(now())
+  txHash      String   @default("0xMOCK")
+
+  debt Debt @relation(fields: [debtId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+}
