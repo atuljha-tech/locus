@@ -36,60 +36,6 @@ SplitEase splits group expenses, tracks who owes what, and automatically escalat
 
 ---
 
-## 🎬 3-Minute Video Demo Script
-
-> Follow this exact sequence for a perfect demo recording.
-
-### ⏱ 0:00 — Landing Page (30s)
-1. Open **[locussplitenforcer.vercel.app](https://locussplitenforcer.vercel.app)**
-2. Show the hero — "Split smarter. Collect faster."
-3. Point out the **Locus Paygentic Hackathon** badge at the top
-4. Watch the escalation carousel auto-cycle: Gentle → Snarky → Passive-Agg → ☢️ Scorched
-5. Click **"🎬 Load Demo Data"** → auto-redirects to Dashboard
-
-### ⏱ 0:30 — Dashboard Overview (30s)
-6. Land on **Dashboard → Overview tab**
-7. Show the 4 stat pills: Total Owed, Overdue count, Late Fees, NFTs Minted
-8. Point out the **Live Activity ticker** scrolling at the bottom
-9. Show the **Recent Debts** and **Hall of Fame** side by side
-
-### ⏱ 1:00 — Debts + Shame Escalation (45s)
-10. Click **💸 Debts tab**
-11. Expand **Jamie's debt** (SHAMED — NFT already minted)
-    - Show the 3 pre-loaded shame messages (Tier 0, 1, 2)
-    - Show the **NFT of Shame** card with token ID + tx hash
-12. Expand **Alex's debt** (OVERDUE)
-    - Click **"🔥 Send Shame"** → watch AI generate a Tier 3 scorched-earth message
-    - Show the shame meter fill up to ☢️ Nuclear
-
-### ⏱ 1:45 — AI Insights (30s)
-13. Click **🤖 AI Insights tab** (purple glow, NEW badge)
-14. Show **OpenClaw AI group analysis** loading
-    - Group financial health summary
-    - Top debtor identification
-    - AI-generated action items
-15. Go back to Debts → expand a debt → click **"🤖 AI Risk Analysis"**
-    - Show the circular risk gauge
-    - Payment probability bar
-    - AI prediction + recommendation
-
-### ⏱ 2:15 — Optimizer (20s)
-16. Click **⚡ Optimizer tab**
-17. Show: "4 active debts → 2 optimal transfers"
-18. Point out the algorithm explainer: O(n log n), provably minimal
-19. Show the net balances — who owes who at a glance
-
-### ⏱ 2:35 — Locus Pay + Wall of Shame (25s)
-20. Go back to **Debts** → expand Alex's debt → click **"⚡ Pay $X USDC"**
-    - Locus payment popup opens
-    - Click Pay → "Confirmed on Solana" → debt auto-resolves
-21. Click **🏛️ Wall of Shame** link in sidebar
-    - Show the dark-mode public leaderboard
-    - Click Jamie's shame card → shareable public URL
-    - Show the NFT of Shame section
-
----
-
 ## 🏆 Locus Paygentic Integration
 
 This project was built specifically for the **Locus Paygentic Hackathon** and deeply integrates the Locus payment infrastructure:
@@ -292,7 +238,7 @@ LOCUS_WEBHOOK_SECRET="whsec_your-webhook-secret"
 
 ---
 
-## 📊 Why This Wins
+## 📊 Why This
 
 1. **Real AI** — OpenClaw generates unique shame messages per debtor, not templates
 2. **Real payments** — Locus Paygentic USDC settlement with webhook confirmation
