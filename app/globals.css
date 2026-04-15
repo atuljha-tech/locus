@@ -378,3 +378,41 @@ select.input { appearance: none; cursor: pointer; }
 @media (max-width: 768px) {
   .fab { bottom: 80px; }
 }
+
+/* Spin animation for loading spinners */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* AI glow effect */
+.ai-glow {
+  box-shadow: 0 0 20px rgba(124,58,237,0.3), 0 0 40px rgba(124,58,237,0.1);
+}
+
+/* Locus pay button */
+.locus-btn {
+  background: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(88,28,135,0.08));
+  border: 1.5px solid rgba(124,58,237,0.25);
+  color: #7c3aed;
+  font-weight: 700;
+  border-radius: 99px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.locus-btn:hover {
+  background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(88,28,135,0.15));
+  box-shadow: 0 4px 16px rgba(124,58,237,0.25);
+  transform: translateY(-1px);
+}
+
+/* Risk score ring animation */
+@keyframes ringFill {
+  from { stroke-dashoffset: 125.66; }
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .sidebar-desktop { display: none !important; }
+  .main-content { margin-left: 0 !important; max-width: 100vw !important; padding: 16px 16px 80px !important; }
+  .mobile-nav { display: flex !important; }
+}

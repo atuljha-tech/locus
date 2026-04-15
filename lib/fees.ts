@@ -46,13 +46,13 @@ export function getShameLevel(daysOverdue: number): {
   color: string
   emoji: string
 } {
-  if (daysOverdue === 0) return { level: 0, label: 'Fresh',          color: 'text-green-400',  emoji: '🟢' }
-  if (daysOverdue < 1)  return { level: 1, label: 'Mild',           color: 'text-yellow-400', emoji: '🟡' }
-  if (daysOverdue < 2)  return { level: 2, label: 'Snarky',         color: 'text-orange-400', emoji: '🟠' }
-  if (daysOverdue < 3)  return { level: 3, label: 'Passive-Agg',    color: 'text-red-400',    emoji: '🔴' }
-  return                       { level: 4, label: 'Scorched Earth', color: 'text-purple-400', emoji: '☢️' }
+  if (daysOverdue === 0) return { level: 0, label: 'Fresh',          color: '#22c55e',  emoji: '🟢' }
+  if (daysOverdue < 1)  return { level: 1, label: 'Mild',           color: '#eab308',  emoji: '🟡' }
+  if (daysOverdue < 3)  return { level: 2, label: 'Snarky',         color: '#f97316',  emoji: '🟠' }
+  if (daysOverdue < 7)  return { level: 3, label: 'Passive-Agg',    color: '#ef4444',  emoji: '🔴' }
+  return                       { level: 4, label: 'Scorched Earth',  color: '#a855f7',  emoji: '☢️' }
 }
 
-export function formatCurrency(amount: number, currency = 'USD'): string {
-  return new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(amount)
+export function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
 }

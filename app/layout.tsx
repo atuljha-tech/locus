@@ -9,10 +9,16 @@ const inter = Inter({
 })
 
 export const metadata: Metadata = {
-  title: 'SplitEase — Smart Expense Splitting',
-  description: 'Split expenses, track debts, and settle up with friends. Clean, fast, and smart.',
+  title: 'SplitEase — AI-Powered Debt Enforcement | Locus Paygentic Hackathon',
+  description: 'Split expenses, track debts, and enforce payment with AI-generated shame messages, soulbound NFTs, and instant USDC settlement via Locus Paygentic.',
+  keywords: ['debt tracker', 'expense splitting', 'AI shame', 'Locus Pay', 'USDC', 'Solana', 'OpenClaw AI', 'hackathon'],
   icons: {
     icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💸</text></svg>",
+  },
+  openGraph: {
+    title: 'SplitEase — AI-Powered Debt Enforcement',
+    description: 'Your friends will pay. AI shame escalation + Locus USDC payments + soulbound NFTs.',
+    type: 'website',
   },
 }
 

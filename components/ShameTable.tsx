@@ -1,6 +1,15 @@
 'use client'
 
 import { useState } from 'react'
+import dynamic from 'next/dynamic'
+
+// Dynamically import Locus button to avoid SSR issues
+const LocusPayButton = dynamic(() => import('./LocusPayButton'), { ssr: false })
+const LocusPayButtonFallback = dynamic(
+  () => import('./LocusPayButton').then(m => ({ default: m.LocusPayButtonFallback })),
+  { ssr: false }
+)
+const AIRiskPanel = dynamic(() => import('./AIRiskPanel'), { ssr: false })
 
 export interface Debt {
   id: string
@@ -246,6 +255,17 @@ function DebtRow({ debt, onShame, onMintNFT, onMarkPaid, loadingId }: {
             </div>
           )}
 
+          {/* AI Risk Panel */}
+          {debt.status !== 'PAID' && (
+            <div onClick={e => e.stopPropagation()}>
+              <AIRiskPanel
+                debtId={debt.id}
+                debtorName={debt.debtor.name}
+                amount={debt.totalOwed}
+              />
+            </div>
+          )}
+
           {/* Action buttons */}
           {debt.status !== 'PAID' && (
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -299,6 +319,20 @@ function DebtRow({ debt, onShame, onMintNFT, onMarkPaid, loadingId }: {
               >
                 ✅ {isLoading ? 'Updating…' : 'Mark Paid'}
               </button>
+
+              {/* ── Locus USDC Payment ── */}
+              <div onClick={e => e.stopPropagation()}>
+                <LocusPayButton
+                  debtId={debt.id}
+                  amount={debt.totalOwed}
+                  debtorName={debt.debtor.name}
+                  description={debt.description}
+                  onSuccess={(txHash) => {
+                    onMarkPaid(debt.id)
+                  }}
+                  onError={(msg) => console.error('Locus pay error:', msg)}
+                />
+              </div>
             </div>
           )}
         </div>

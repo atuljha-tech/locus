@@ -55,7 +55,7 @@ export default function ShameTicker({ events = DEFAULT_EVENTS }: ShameTickerProp
       }} />
 
       <div className="ticker-wrap">
-        <div className="ticker-track" style={{ gap: 0 }}>
+        <div className="ticker-inner" style={{ gap: 0 }}>
           {items.map((ev, i) => (
             <span
               key={`${ev.id}-${i}`}
