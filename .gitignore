@@ -33,3 +33,5 @@ build/
 .idea/
 *.swp
 *.swo
+splitwise-enforcer/
+.vscode/
