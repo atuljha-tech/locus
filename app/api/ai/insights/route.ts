@@ -1,11 +1,8 @@
-/**
- * AI Insights API — Powered by OpenClaw
- * Locus Paygentic Hackathon
- */
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
 import { analyzeDebtRisk, generateGroupInsights } from '@/lib/ai-shame'
 import { calculateLateFee } from '@/lib/fees'
+import { DEMO_DEBTS, DEMO_USERS } from '@/lib/demo-data'
 
 export async function GET(req: NextRequest) {
   try {
@@ -13,37 +10,38 @@ export async function GET(req: NextRequest) {
     const type = searchParams.get('type') ?? 'group'
 
     if (type === 'group') {
-      const debts = await prisma.debt.findMany({
-        where: { status: { not: 'PAID' } },
-        include: {
-          debtor: { select: { id: true, name: true } },
-          shameMessages: true,
-          shameToken: true,
-        },
-      })
+      let debts: any[] = []
+      try {
+        debts = await prisma.debt.findMany({
+          where: { status: { not: 'PAID' } },
+          include: { debtor: { select: { id: true, name: true } }, shameMessages: true, shameToken: true },
+        })
+        if (debts.length === 0) debts = DEMO_DEBTS.filter(d => d.status !== 'PAID')
+      } catch {
+        debts = DEMO_DEBTS.filter(d => d.status !== 'PAID')
+      }
 
-      const totalOwed = debts.reduce((s, d) => {
+      const totalOwed = debts.reduce((s: number, d: any) => {
         if (d.dueDate) {
-          const { totalOwed } = calculateLateFee(d.originalAmt, d.dueDate)
+          const { totalOwed } = calculateLateFee(d.originalAmt, new Date(d.dueDate))
           return s + totalOwed
         }
         return s + d.amount
       }, 0)
 
-      const overdueCount = debts.filter(d => d.status === 'OVERDUE' || d.status === 'SHAMED').length
+      const overdueCount = debts.filter((d: any) => d.status === 'OVERDUE' || d.status === 'SHAMED').length
 
-      // Aggregate by debtor
       const userMap = new Map<string, { name: string; owedAmount: number }>()
       for (const debt of debts) {
-        const existing = userMap.get(debt.debtorId) ?? { name: debt.debtor.name, owedAmount: 0 }
+        const id = debt.debtorId ?? debt.debtor?.id
+        const name = debt.debtor?.name ?? 'Unknown'
+        const existing = userMap.get(id) ?? { name, owedAmount: 0 }
         existing.owedAmount += debt.amount
-        userMap.set(debt.debtorId, existing)
+        userMap.set(id, existing)
       }
 
       const insights = await generateGroupInsights({
-        totalOwed,
-        overdueCount,
-        totalDebts: debts.length,
+        totalOwed, overdueCount, totalDebts: debts.length,
         users: Array.from(userMap.values()),
       })
 
@@ -60,23 +58,32 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => null)
-    if (!body?.debtId) {
-      return NextResponse.json({ error: 'Missing debtId' }, { status: 400 })
-    }
+    if (!body?.debtId) return NextResponse.json({ error: 'Missing debtId' }, { status: 400 })
 
-    const debt = await prisma.debt.findUnique({
-      where: { id: body.debtId },
-      include: {
-        debtor: true,
-        shameMessages: true,
-        shameToken: true,
-      },
-    })
+    let debt: any = null
+    try {
+      debt = await prisma.debt.findUnique({
+        where: { id: body.debtId },
+        include: { debtor: true, shameMessages: true, shameToken: true },
+      })
+    } catch { /* fall through */ }
+
+    if (!debt) {
+      const demo = DEMO_DEBTS.find(d => d.id === body.debtId)
+      if (demo) {
+        debt = {
+          ...demo,
+          debtor: { ...demo.debtor, email: `${demo.debtor.name.toLowerCase()}@splitease.app` },
+          shameMessages: demo.shameMessages,
+          shameToken: demo.shameToken,
+        }
+      }
+    }
 
     if (!debt) return NextResponse.json({ error: 'Debt not found' }, { status: 404 })
 
     const hoursOverdue = debt.dueDate
-      ? (Date.now() - debt.dueDate.getTime()) / (1000 * 60 * 60)
+      ? (Date.now() - new Date(debt.dueDate).getTime()) / (1000 * 60 * 60)
       : 0
     const daysOverdue = Math.max(0, Math.floor(hoursOverdue / 24))
 
@@ -85,7 +92,7 @@ export async function POST(req: NextRequest) {
       amount: debt.amount,
       daysOverdue,
       description: debt.description,
-      shameCount: debt.shameMessages.length,
+      shameCount: debt.shameMessages?.length ?? 0,
       hasNFT: !!debt.shameToken,
     })
 
