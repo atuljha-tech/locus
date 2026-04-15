@@ -95,9 +95,14 @@ export default function Landing() {
 
   async function seed() {
     setSeeding(true)
-    await fetch('/api/seed', { method: 'POST' }).catch(() => {})
-    setSeeded(true)
-    setSeeding(false)
+    try {
+      await fetch('/api/seed', { method: 'POST' })
+      setSeeded(true)
+      // Redirect to dashboard after 800ms so user sees the success state
+      setTimeout(() => { window.location.href = '/dashboard' }, 800)
+    } catch {
+      setSeeding(false)
+    }
   }
 
   const current = ESCALATION_STEPS[step]
@@ -205,15 +210,16 @@ export default function Landing() {
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
               padding: '14px 28px', borderRadius: 99,
-              background: 'transparent', color: '#1a2e1a',
+              background: seeded ? '#f0faf4' : 'transparent',
+              color: seeded ? '#197249' : '#1a2e1a',
               fontSize: 15, fontWeight: 600,
-              border: '1.5px solid #e4ebe4',
+              border: `1.5px solid ${seeded ? '#bbead0' : '#e4ebe4'}`,
               cursor: seeding || seeded ? 'not-allowed' : 'pointer',
               opacity: seeding ? 0.7 : 1,
               transition: 'all 0.2s',
             }}
           >
-            {seeding ? '⏳ Loading…' : seeded ? '✅ Demo ready!' : '🎭 Load Demo Data'}
+            {seeding ? '⏳ Loading demo…' : seeded ? '✅ Opening dashboard…' : '🎬 Load Demo Data'}
           </button>
         </div>
       </section>
