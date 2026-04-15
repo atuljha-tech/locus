@@ -12,19 +12,27 @@
 
 ---
 
+## 🎥 Demo Video
+
+https://github.com/atuljha-tech/locus/raw/main/public/screenrecording.mov
+
+> Or watch directly: [▶ Download & Play Demo (32MB)](https://github.com/atuljha-tech/locus/raw/main/public/screenrecording.mov)
+
+---
+
 ## 📸 Screenshots
 
 ### 🏠 Landing Page
-![Landing Page](public/ss1.png)
+![Landing Page](https://raw.githubusercontent.com/atuljha-tech/locus/main/public/ss1.png)
 
 ### 📊 Dashboard
-![Dashboard](public/ss2.png)
+![Dashboard](https://raw.githubusercontent.com/atuljha-tech/locus/main/public/ss2.png)
 
 ### 🤖 AI Insights
-![AI Insights](public/ss3.png)
+![AI Insights](https://raw.githubusercontent.com/atuljha-tech/locus/main/public/ss3.png)
 
 ### 🏛️ Wall of Shame
-![Wall of Shame](public/ss4.png)
+![Wall of Shame](https://raw.githubusercontent.com/atuljha-tech/locus/main/public/ss4.png)
 
 ---
 
